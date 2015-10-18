@@ -1,24 +1,10 @@
 #ifndef IMAGECREATOR_H
 #define IMAGECREATOR_H
 
-#include <fstream>
-using std::ifstream;
-using std::ofstream;
-
 #include "SFML\Graphics.hpp"
 #include "SFML\Window.hpp"
 using sf::RenderWindow;
-using sf::VideoMode;
-using sf::Event;
 using sf::VertexArray;
-using sf::Vector2f;
-using sf::Points;
-using sf::Color;
-using sf::Keyboard;
-using sf::Image;
-
-#include <string>
-using std::string;
 
 #include "SolarSystem.h"
 using gm::SolarSystem;

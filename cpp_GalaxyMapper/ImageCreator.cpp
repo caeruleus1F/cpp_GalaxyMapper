@@ -1,6 +1,21 @@
 #include "ImageCreator.h"
 using gm::ImageCreator;
 
+#include <fstream>
+using std::ifstream;
+using std::ofstream;
+
+#include <string>
+using std::string;
+
+using sf::VideoMode;
+using sf::Event;
+using sf::Vector2f;
+using sf::Points;
+using sf::Color;
+using sf::Keyboard;
+using sf::Image;
+
 ImageCreator::ImageCreator()
 	: _systems(nullptr), _number_of_systems(0), _image_map(nullptr), _grid(nullptr), _window(nullptr), _window_x(1000), 
 	_window_y(1000), _padding(5)
@@ -19,7 +34,6 @@ ImageCreator::ImageCreator()
 			_grid[i][j] = false;
 		}
 	}
-	
 }
 
 ImageCreator::~ImageCreator()
@@ -44,6 +58,9 @@ ImageCreator::~ImageCreator()
 	delete[] _grid;
 }
 
+/*******************************************************************************
+*	Driver function
+*******************************************************************************/
 void ImageCreator::Start()
 {
 	ReadSystems();
@@ -53,6 +70,10 @@ void ImageCreator::Start()
 	MainWindowLoop();
 }
 
+/*******************************************************************************
+*	Reads each system from a local solarsystems.csv file and stores the
+*	relevant data into a SolarSystem class and placed on the heap.
+*******************************************************************************/
 void ImageCreator::ReadSystems()
 {
 	// read in solar system coords
@@ -143,6 +164,18 @@ void ImageCreator::ReadSystems()
 	}
 }
 
+/*******************************************************************************
+*	This is where most of the magic happens. The X and Y coordinates are
+*	large enough that they can only be processed as either strings, or
+*	if converted to numbers, or as 64-bit integers. Because 64-bit ints
+*	are too large to work with in floating-point division, they have to
+*	be divided by 1 billion. Anyway, because the range of the coords is
+*	too large to be represented 1:1 in an image, they have to be
+*	normalized, with room for padding. Each solar system's normalized
+*	X and Y position flips a cell in **_grid from false to true. This
+*	true or false value determines whether a pixel in the image is white
+*	or black.
+*******************************************************************************/
 void ImageCreator::PopulateGrid()
 {
 	__int64 lowest_x = 0;
@@ -198,6 +231,10 @@ void ImageCreator::PopulateGrid()
 	}
 }
 
+/*******************************************************************************
+*	Writes **_grid to a text file whose dimensions are determined by the
+*	size of the window. Default is 1000 by 1000.
+*******************************************************************************/
 void ImageCreator::WriteGrid()
 {
 	ofstream writer("test.csv");
@@ -221,6 +258,15 @@ void ImageCreator::WriteGrid()
 	writer.close();
 }
 
+/*******************************************************************************
+*	Translates the TRUE/FALSE values in **_grid to white or black dots,
+*	respectively. Vector2f(j, _window_x - i) flips the image around
+*	so that the position of the solar systems somewhat resemble how
+*	they're arranged in-game. Actually, no combination of flipping makes
+*	the image look close to the way they're positioned in game. Either
+*	something with my processing is off, or the game itself ignores
+*	coordinate data in the SDE.
+*******************************************************************************/
 void ImageCreator::PopulateImageMap()
 {
 	for (int i = 0; i < _window_y; ++i)
@@ -244,6 +290,10 @@ void ImageCreator::PopulateImageMap()
 	}
 }
 
+/*******************************************************************************
+*	Handles window events. The user can press ESC to close the window or
+*	F1 to take a screenshot which is automatically named "GalaxyMap.jpg".
+*******************************************************************************/
 void ImageCreator::MainWindowLoop()
 {
 	try
